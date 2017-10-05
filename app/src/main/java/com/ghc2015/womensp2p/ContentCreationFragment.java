@@ -10,9 +10,11 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +24,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -44,6 +49,7 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
     private ImageView displayImage;
     private CheckBox reportCheckBox;
     private EditText locationEditText;
+    private Uri imageToUploadUri;
 
     public ContentCreationFragment() {
         // Required empty public constructor
@@ -77,6 +83,8 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
         switch (view.getId()) {
             case R.id.cancel_create_content:
                 getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+                Fragment createContentFragment = new ContentCreationFragment();
+                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, createContentFragment).commit();
                 break;
             case R.id.create_content_button:
                 // TODO post all of these to the internal database if NOT connected to wifi
@@ -126,7 +134,8 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
 
                     database.close();
                 }
-                getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
+                Fragment newCreateContentFragment = new ContentCreationFragment();
+                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, newCreateContentFragment).commit();
                 break;
             case R.id.attach_media:
                 Intent mediaChooser = new Intent(Intent.ACTION_GET_CONTENT);
@@ -135,10 +144,11 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
                 startActivityForResult(mediaChooser, 0);
                 break;
             case R.id.take_new_photo:
-                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-                    startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                }
+                Intent chooserIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                File f = new File(Environment.getExternalStorageDirectory(), "POST_IMAGE.jpg");
+                chooserIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
+                imageToUploadUri = Uri.fromFile(f);
+                startActivityForResult(chooserIntent, REQUEST_IMAGE_CAPTURE);
                 break;
             default:
                 break;
@@ -150,7 +160,17 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            if (imageToUploadUri != null) {
+                Uri selectedImage = imageToUploadUri;
+                getActivity().getContentResolver().notifyChange(selectedImage, null);
+                Bitmap reducedSizeBitmap = getBitmap(imageToUploadUri.getPath());
+                if (reducedSizeBitmap != null) {
+                    displayImage.setImageBitmap(userBitmap);
+                    displayImage.setVisibility(View.VISIBLE);
+                }
+            }
+        } else if (resultCode == RESULT_OK) {
             Uri targetUri = data.getData();
             if (targetUri != null) {
                 String type = getActivity().getContentResolver().getType(targetUri);
@@ -174,5 +194,74 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
     public void onDestroy() {
         // TODO deal with orientation changes and destroy
         super.onDestroy();
+    }
+
+    private Bitmap getBitmap(String path) {
+
+        Uri uri = Uri.fromFile(new File(path));
+        InputStream in = null;
+        try {
+            final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
+            try {
+                in = getActivity().getContentResolver().openInputStream(uri);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+
+            // Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(in, null, o);
+            try {
+                in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+            int scale = 1;
+            while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) >
+                    IMAGE_MAX_SIZE) {
+                scale++;
+            }
+            Log.d("", "scale = " + scale + ", orig-width: " + o.outWidth + ", orig-height: " + o.outHeight);
+
+            Bitmap b = null;
+            in = getActivity().getContentResolver().openInputStream(uri);
+            if (scale > 1) {
+                scale--;
+                // scale to max possible inSampleSize that still yields an image
+                // larger than target
+                o = new BitmapFactory.Options();
+                o.inSampleSize = scale;
+                b = BitmapFactory.decodeStream(in, null, o);
+
+                // resize to desired dimensions
+                int height = b.getHeight();
+                int width = b.getWidth();
+                Log.d("", "1th scale operation dimenions - width: " + width + ", height: " + height);
+
+                double y = Math.sqrt(IMAGE_MAX_SIZE
+                        / (((double) width) / height));
+                double x = (y / height) * width;
+
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(b, (int) x,
+                        (int) y, true);
+                b.recycle();
+                b = scaledBitmap;
+
+                System.gc();
+            } else {
+                b = BitmapFactory.decodeStream(in);
+            }
+            in.close();
+
+            Log.d("", "bitmap size - width: " + b.getWidth() + ", height: " +
+                    b.getHeight());
+            return b;
+        } catch (IOException e) {
+            Log.e("", e.getMessage(), e);
+            return null;
+        }
     }
 }

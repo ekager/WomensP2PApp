@@ -1,4 +1,10 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -35,35 +41,35 @@
             android:visibility="gone" />
 
         <LinearLayout
-            android:padding="10dp"
-            android:weightSum="4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:weightSum="4">
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
 
             <Button
-                android:layout_weight="1"
                 android:id="@+id/attach_media"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-               android:text="@string/attach_image" />
+                android:layout_weight="1"
+                android:text="@string/attach_image" />
 
             <Button
-                android:layout_weight="1"
                 android:id="@+id/take_new_photo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/new_image"/>
+                android:layout_weight="1"
+                android:text="@string/new_image" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
 
         </LinearLayout>
 
@@ -76,11 +82,11 @@
             android:lines="1" />
 
         <CheckBox
-            android:layout_gravity="center"
-            android:text="@string/check_report"
             android:id="@+id/report_checkbox"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/check_report" />
 
     </LinearLayout>
 
@@ -118,3 +124,5 @@
     </LinearLayout>
 
 </LinearLayout>
+
+</ScrollView>
