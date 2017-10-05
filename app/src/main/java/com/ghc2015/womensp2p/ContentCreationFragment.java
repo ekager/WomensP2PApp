@@ -1,7 +1,9 @@
 package com.ghc2015.womensp2p;
 
 
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
@@ -19,6 +21,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -81,13 +84,13 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
 
                 // TODO get time
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
-                String currentDateandTime = sdf.format(new Date());
+                final String currentDateandTime = sdf.format(new Date());
 
                 // TODO get location
-                String userLocation = locationEditText.getText().toString();
+                final String userLocation = locationEditText.getText().toString();
 
                 // TODO get boolean if report
-                boolean isReport = reportCheckBox.isChecked();
+                final boolean isReport = reportCheckBox.isChecked();
 
                 ConnectivityManager connManager = (ConnectivityManager) getActivity().getSystemService(getActivity().CONNECTIVITY_SERVICE);
                 NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
@@ -99,9 +102,30 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
                     }
                 } else {
                     // TODO save in our database for now
-                    if (userBitmap != null) {
-                        // Call method with photo addition
-                    }
+
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    userBitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
+                    byte[] bArray = bos.toByteArray();
+
+
+                    SQLiteDatabase database = new DatabaseHelper(getActivity()).getWritableDatabase();
+
+                    ContentValues values = new ContentValues();
+                    values.put(DatabaseContract.PostEntry.COLUMN_USER, "Test User");
+                    values.put(DatabaseContract.PostEntry.COLUMN_TIME, currentDateandTime);
+                    values.put(DatabaseContract.PostEntry.COLUMN_IMAGE, bArray);
+                    values.put(DatabaseContract.PostEntry.COLUMN_LOCATION, userLocation);
+                    values.put(DatabaseContract.PostEntry.COLUMN_POST_TEXT, userText);
+                    values.put(DatabaseContract.PostEntry.COLUMN_REPORT, isReport);
+
+                    long newRowId;
+                    newRowId = database.insert(
+                            DatabaseContract.PostEntry.TABLE_NAME,
+                            DatabaseContract.PostEntry.COLUMN_NULLABLE,
+                            values
+                    );
+
+                    database.close();
                 }
                 break;
             case R.id.attach_media:
