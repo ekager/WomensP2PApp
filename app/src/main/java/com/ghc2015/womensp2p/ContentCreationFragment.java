@@ -102,18 +102,17 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
                     }
                 } else {
                     // TODO save in our database for now
-
-                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                    userBitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
-                    byte[] bArray = bos.toByteArray();
-
-
                     SQLiteDatabase database = new DatabaseHelper(getActivity()).getWritableDatabase();
 
                     ContentValues values = new ContentValues();
                     values.put(DatabaseContract.PostEntry.COLUMN_USER, "Test User");
                     values.put(DatabaseContract.PostEntry.COLUMN_TIME, currentDateandTime);
-                    values.put(DatabaseContract.PostEntry.COLUMN_IMAGE, bArray);
+                    if (userBitmap != null) {
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        userBitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
+                        byte[] bArray = bos.toByteArray();
+                        values.put(DatabaseContract.PostEntry.COLUMN_IMAGE, bArray);
+                    }
                     values.put(DatabaseContract.PostEntry.COLUMN_LOCATION, userLocation);
                     values.put(DatabaseContract.PostEntry.COLUMN_POST_TEXT, userText);
                     values.put(DatabaseContract.PostEntry.COLUMN_REPORT, isReport);
@@ -127,6 +126,7 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
 
                     database.close();
                 }
+                getActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
                 break;
             case R.id.attach_media:
                 Intent mediaChooser = new Intent(Intent.ACTION_GET_CONTENT);
@@ -152,7 +152,7 @@ public class ContentCreationFragment extends Fragment implements View.OnClickLis
 
         if (resultCode == RESULT_OK) {
             Uri targetUri = data.getData();
-            if (!TextUtils.isEmpty(targetUri.toString())) {
+            if (targetUri != null) {
                 String type = getActivity().getContentResolver().getType(targetUri);
                 if (!TextUtils.isEmpty(type)) {
                     if (type.contains("image") | type.contains("video")) {
