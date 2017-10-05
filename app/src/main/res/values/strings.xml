@@ -2,4 +2,11 @@
     <string name="app_name">WomensP2P</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="create_content_title">Create Content</string>
+    <string name="cancel_create_content">Cancel</string>
+    <string name="content_hint">Your caption here...</string>
+    <string name="location_hint">Location</string>
+    <string name="new_image">New image/video</string>
+    <string name="attach_image">Attach image/video</string>
+    <string name="check_report">Check if this is a report</string>
 </resources>
