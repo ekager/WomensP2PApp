@@ -44,6 +44,17 @@ public class MainActivity extends FragmentActivity {
         ActionBar.TabListener tabListener = new ActionBar.TabListener(){
             public void onTabSelected(ActionBar.Tab tab, FragmentTransaction ft) {
                 mViewPager.setCurrentItem(tab.getPosition());
+                if (tab.getPosition() == 3) {
+                    android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    Fragment contentCreationFrag = new ContentCreationFragment();
+                    transaction.replace(R.id.fragment_container, contentCreationFrag);
+                    transaction.commit();
+                } else {
+                    android.support.v4.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                    Fragment feedFrag = new FeedFragment();
+                    transaction.replace(R.id.fragment_container, feedFrag);
+                    transaction.commit();
+                }
             }
             public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction ft) {
 
