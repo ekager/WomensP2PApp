@@ -1,18 +1,26 @@
 package com.ghc2015.womensp2p;
 
-import android.app.Activity;
+import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.ListFragment;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.v4.app.*;
-import android.view.*;
-import android.widget.*;
-import java.util.*;
-import android.util.Log;
-import android.app.ActionBar;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.util.ArrayList;
+
 
 public class MainActivity extends FragmentActivity {
     ViewPager mViewPager;
@@ -45,9 +53,9 @@ public class MainActivity extends FragmentActivity {
             }
         };
 
-        String[] tabTitles = new String[] {"Candidates", "Reports", "Supporters"};
+        String[] tabTitles = new String[]{"Candidates", "Reports", "Supporters", "Add New Report"};
 
-        for(int i=0; i<3; i++)
+        for (int i = 0; i < 4; i++)
         {
             actionBar.addTab(actionBar.newTab().setText(tabTitles[i]).setTabListener(tabListener));
         }
